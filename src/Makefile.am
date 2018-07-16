@@ -23,6 +23,12 @@ dist_bin_SCRIPTS = \
     clevis-luks-unlock \
     clevis-luks-bind \
     clevis-luks-unbind \
+    clevis-luks-regen \
+    clevis-luks-report \
+    clevis-luks-report-compare \
+    clevis-luks-report-http \
+    clevis-luks-report-sss \
+    clevis-luks-report-tang \
     clevis-decrypt \
     clevis
 
