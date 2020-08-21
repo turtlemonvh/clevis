@@ -41,3 +41,4 @@ src/clevis-encrypt-sss
 src/clevis-decrypt-sss
 src/udisks2/clevis-luks-udisks2
 src/udisks2/clevis-luks-udisks2.desktop
+.vagrant

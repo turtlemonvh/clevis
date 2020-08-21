@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+KEYID="E1IVI_9_1b8"
+PROFILE_OPTIONS="-t plaintext -f ~/ionic_profile.pt"
+
+DEFAULT_METADATA="ionic-application-name:luks-keyscript,ionic-application-version:0.0.1"
+
+machina \
+	$PROFILE_OPTIONS \
+	key fetch \
+	-i $KEYID \
+	-m $DEFAULT_METADATA \
+	# Grab the base64 encoded key
+	# https://github.com/latchset/jose
+	| jose fmt -j - -O -g keys -A -g 0 -O -g keyData -u - \
+	# From std to urlsafe base64
+	| base64 -d \
+	| jose b64 enc -I-
+

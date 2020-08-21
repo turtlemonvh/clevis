@@ -1,0 +1,4 @@
+*.tar.gz
+*.jwe
+*.json
+/machina/

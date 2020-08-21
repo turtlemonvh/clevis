@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Generated via: key=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null | jose b64 enc -I-)
+echo mOiIviy5T5XrizzczFXb7yIfcLQbzoFPWfWxjfV0rNs
