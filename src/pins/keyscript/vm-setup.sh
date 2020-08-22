@@ -6,3 +6,5 @@ apt-get update
 apt-get install -y clevis clevis-luks clevis-dracut
 
 apt-get install -y haveged
+systemctl enable haveged.service
+

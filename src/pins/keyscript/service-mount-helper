@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+CRYPTSETUP_NAME="secret"
+MOUNT_POINT="/secret"
+MACHINA_KEYSPACE="E1IV"
+PROFILE_OPTIONS="-t plaintext -f /root/ionic_profile.pt"
+
+if [ "$1" == "-u" ]; then 
+    echo "> Unmount and unlock /secret"
+    if ( mount | grep $MOUNT_POINT >/dev/null ); then 
+        umount $MOUNT_POINT
+    fi
+    if [ -L "/dev/mapper/$CRYPTSETUP_NAME" ]; then 
+        cryptsetup close /dev/mapper/$CRYPTSETUP_NAME
+    fi
+elif [ "$1" == "-w" ]; then
+    # Wait until this responds w/o error
+    echo "> Checking that machina service is reachable"
+    machina $PROFILE_OPTIONS profile kns -k $MACHINA_KEYSPACE
+else
+    echo "> Unlock and mount $MOUNT_POINT"
+    if [ ! -L "/dev/mapper/$CRYPTSETUP_NAME" ]; then 
+        clevis luks unlock -d /dev/sdb -n $CRYPTSETUP_NAME
+    fi
+    # Mount if not already mounted
+    if ! ( mount | grep $MOUNT_POINT >/dev/null ); then 
+        mount /dev/mapper/$CRYPTSETUP_NAME $MOUNT_POINT
+    fi
+fi
