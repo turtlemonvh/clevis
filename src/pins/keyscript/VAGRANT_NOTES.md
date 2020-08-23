@@ -138,6 +138,8 @@ This is what the view in the VM console looks like: it pauses for a password, th
     * systemd mounts are created dynamically at runtime from fstab entries
 * https://unix.stackexchange.com/questions/486934/mounts-of-systemd-service-script-disappear
     * can use oneshot for complex mounts instead of crypttab and fstab
+* https://bugzilla.redhat.com/show_bug.cgi?id=1810332
+    * Helpful recent conversation on setting up clevis auto-unlock in fedora (mostly on LVM / grub partitions)
 
 ### Using a oneshot sevice
 

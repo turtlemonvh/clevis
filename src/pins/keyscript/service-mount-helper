@@ -4,6 +4,7 @@ CRYPTSETUP_NAME="secret"
 MOUNT_POINT="/secret"
 MACHINA_KEYSPACE="E1IV"
 PROFILE_OPTIONS="-t plaintext -f /root/ionic_profile.pt"
+DISK="/dev/sdb"
 
 if [ "$1" == "-u" ]; then 
     echo "> Unmount and unlock /secret"
@@ -20,7 +21,7 @@ elif [ "$1" == "-w" ]; then
 else
     echo "> Unlock and mount $MOUNT_POINT"
     if [ ! -L "/dev/mapper/$CRYPTSETUP_NAME" ]; then 
-        clevis luks unlock -d /dev/sdb -n $CRYPTSETUP_NAME
+        clevis luks unlock -d $DISK -n $CRYPTSETUP_NAME
     fi
     # Mount if not already mounted
     if ! ( mount | grep $MOUNT_POINT >/dev/null ); then 

@@ -149,3 +149,54 @@ is-mbp-timothy4:clevis timothy$ key=abc4567890
 is-mbp-timothy4:clevis timothy$ jose jwk gen -i '{"alg":"A256GCM"}' | jose fmt -j- -O -q $key -Ss k -Uo-
 {"alg":"A256GCM","k":"abc4567890","key_ops":["encrypt","decrypt"],"kty":"oct"}
 ```
+
+## On AWS EC2
+
+After configuring `/etc/luks-keyscript/service-mount-helper` and `/etc/luks-keyscript/machina-fetch-keyscript` to use credentials for a free-tier Machina tenant and changing the disk to `/dev/xvdb` (and extra ebs volume added to the instance), I was able to manually starting the service.
+
+```bash
+root@ip-172-31-53-254:/home/ubuntu# systemctl status mount-enc-secret-dirb
+● mount-enc-secret-dirb.service - Mount clevis-keyscript managed directory
+   Loaded: loaded (/etc/systemd/system/mount-enc-secret-dirb.service; enabled; vendor preset: enabled)
+   Active: active (exited) since Sun 2020-08-23 02:04:36 UTC; 13min ago
+  Process: 1668 ExecStart=/etc/luks-keyscript/service-mount-helper (code=exited, status=0/SUCCESS)
+  Process: 1652 ExecStartPre=/etc/luks-keyscript/service-mount-helper -w (code=exited, status=0/SUCCESS)
+ Main PID: 1668 (code=exited, status=0/SUCCESS)
+
+Aug 23 02:04:31 ip-172-31-53-254 systemd[1]: Starting Mount clevis-keyscript managed directory...
+Aug 23 02:04:31 ip-172-31-53-254 service-mount-helper[1652]: > Checking that machina service is reachable
+Aug 23 02:04:31 ip-172-31-53-254 service-mount-helper[1652]: TenantID: 5e1a345203b62b28090008a0
+Aug 23 02:04:31 ip-172-31-53-254 service-mount-helper[1652]: FQDN: b.6.b.c.6.0.ks.kns.ionic.com
+Aug 23 02:04:31 ip-172-31-53-254 service-mount-helper[1652]: API URL: https://api.ionic.com
+Aug 23 02:04:31 ip-172-31-53-254 service-mount-helper[1652]: Enrollment URL: https://enrollment.ionic.com/keyspace/Bstr/register
+Aug 23 02:04:31 ip-172-31-53-254 service-mount-helper[1668]: > Unlock and mount /secretb
+Aug 23 02:04:36 ip-172-31-53-254 systemd[1]: Started Mount clevis-keyscript managed directory.
+```
+
+But I see this after reboot:
+
+```bash
+root@ip-172-31-53-254:/home/ubuntu# systemctl status mount-enc-secret-dirb
+● mount-enc-secret-dirb.service - Mount clevis-keyscript managed directory
+   Loaded: loaded (/etc/systemd/system/mount-enc-secret-dirb.service; enabled; vendor preset: enabled)
+   Active: inactive (dead)
+```
+
+After some digging (nothing showed up in `journalctl -u mount-enc-secret-dirb.service` post-boot) it turned out `NetworkManager-wait-online` doesn't exist on the AWS version of Ubuntu 18.04.
+
+```bash
+root@ip-172-31-53-254:/home/ubuntu# systemctl is-enabled NetworkManager-wait-online
+Failed to get unit file state for NetworkManager-wait-online.service: No such file or directory
+root@ip-172-31-53-254:/home/ubuntu# systemctl list-unit-files | grep -i network
+networkd-dispatcher.service                    enabled
+systemd-networkd-wait-online.service           enabled
+systemd-networkd.service                       enabled
+systemd-networkd.socket                        enabled
+network-online.target                          static
+network-pre.target                             static
+network.target                                 static
+```
+
+Changing `NetworkManager-wait-online.service` to `systemd-networkd-wait-online.service` and calling `systemctl reenable mount-enc-secret-dirb` fixes the service so it comes up and the drive auto-mounts.
+
+There are several comments out there saying that `NetworkManager-wait-online` slows down boot and is commonly disabled for that reason, which may explain why the AWS AMI doesn't have the service.
